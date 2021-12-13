@@ -1,4 +1,8 @@
+<?xml version="1.0"?>
 <launch>
+  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find final_project)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="${GAZEBO_RESOURCE_PATH}:$(find final_project)/models"/>
+
   <arg name="world_name" default="$(find final_project)/world/final_world.world" />
   <arg name="gazebo_ros_output" default="screen"/>
   <!-- load content of targets.yaml into the Parameter Server -->
