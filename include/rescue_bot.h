@@ -8,6 +8,10 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <geometry_msgs/Twist.h>   
 #include <fiducial_msgs/FiducialTransformArray.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+
 #include <ros/ros.h>
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;

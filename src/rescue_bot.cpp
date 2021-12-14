@@ -91,16 +91,25 @@ void Rescue_Bot::fiducial_callback(const fiducial_msgs::FiducialTransformArray::
         ROS_INFO("Find marker");
         m_find_marker = true; 
         //broadcaster object
-        // static tf2_ros::TransformBroadcaster br;
-        // geometry_msgs::TransformStamped transformStamped;
-        // //broadcast the new frame to /tf Topic
-        // transformStamped.header.stamp = ros::Time::now();
-        // transformStamped.header.frame_id = "explorer_tf/camera_rgb_optical_frame";
-        // transformStamped.child_frame_id = "marker_frame"; //name of the frame
-        // transformStamped.transform.translation.x =
-        // msg->transforms[0].transform.translation.x;,→
-        // /*write the remaining code here*/
-        // br.sendTransform(transformStamped); //broadcast the transform on /tf Topic
+        static tf2_ros::TransformBroadcaster br;
+        geometry_msgs::TransformStamped transformStamped;
+
+        //broadcast the new frame to /tf Topic
+        transformStamped.header.stamp = ros::Time::now();
+        transformStamped.header.frame_id = "explorer_tf/camera_rgb_optical_frame";
+        std::string target_name = "target_" + std::to_string(msg->transforms[0].fiducial_id); 
+        ROS_INFO("Broadcasting: %s", target_name); 
+        transformStamped.child_frame_id = target_name.c_str(); //name of the frame
+        //transformStamped.child_frame_id = "my_frame";
+        //transformStamped.transform = msg->transforms[0].transform;
+        transformStamped.transform.translation.x = 0.5;
+        transformStamped.transform.translation.y = 0.5;
+        transformStamped.transform.translation.z = 0.2;
+        transformStamped.transform.rotation.x = 0;
+        transformStamped.transform.rotation.y = 0;
+        transformStamped.transform.rotation.z = 0;
+        transformStamped.transform.rotation.w = 1;
+        br.sendTransform(transformStamped); //broadcast the transform on /tf Topic
     }
 }
 
