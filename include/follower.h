@@ -46,8 +46,6 @@ class Follower {
 
         Position m_start_position = {-4, 3.5}; 
 
-        double m_tolerance = 0.4; 
-
 }; 
 
 
