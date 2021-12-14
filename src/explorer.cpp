@@ -101,6 +101,8 @@ void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::Co
         ROS_INFO("Broadcasting: %s", target_name.c_str()); 
         transformStamped.child_frame_id = target_name; //name of the frame
         transformStamped.transform = msg->transforms[0].transform;
+        double tolerance = 0.4; 
+        transformStamped.transform.translation.z -= tolerance;
 
         m_br.sendTransform(transformStamped); //broadcast the transform on /tf Topic
     }
@@ -131,12 +133,13 @@ void Explorer::detect_aruco_marker(){
 
         ros::Time end = ros::Time::now();
 
-        // start counting terminate degree after first marker found
+        // decrease spining speed for better detection after first marker found
         if(m_find_marker) {
             d += end - begin;
-            bool is_90_degree = d.toSec() > ((M_PI/2) / turning_vel); 
-            // stop turning after 90 degree
-            if(is_90_degree) {
+            // turn little angle for a delay time for better detection
+            bool finish_delay = d.toSec() > ((M_PI/3) / turning_vel); 
+            turning_vel = 0.05; 
+            if(finish_delay) {
                 break; 
             }
         }

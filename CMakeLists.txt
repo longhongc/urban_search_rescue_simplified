@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   tf
   tf2_ros
+  tf2_geometry_msgs
   move_base_msgs
   fiducial_msgs
   std_srvs
