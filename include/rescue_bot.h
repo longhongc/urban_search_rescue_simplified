@@ -47,6 +47,7 @@ class Rescue_Bot
     Position m_start_position; 
     bool m_find_marker = false;  
 
+    ros::Subscriber m_fiducial_sub; 
     //ros::Publisher m_velocity_publisher;
 }; 
 

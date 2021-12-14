@@ -6,6 +6,7 @@ Rescue_Bot::Rescue_Bot(ros::NodeHandle* nodehandle, Robot_Type robot_type, int n
     m_nh{*nodehandle},
     m_type{robot_type} {
 
+    m_fiducial_sub = m_nh.subscribe("/fiducial_transforms", 1000, &Rescue_Bot::fiducial_callback, this); 
 
     if (m_type == Robot_Type::Explorer) {
         m_type_name = "explorer"; 
@@ -98,28 +99,21 @@ void Rescue_Bot::fiducial_callback(const fiducial_msgs::FiducialTransformArray::
         transformStamped.header.stamp = ros::Time::now();
         transformStamped.header.frame_id = "explorer_tf/camera_rgb_optical_frame";
         std::string target_name = "target_" + std::to_string(msg->transforms[0].fiducial_id); 
-        ROS_INFO("Broadcasting: %s", target_name); 
-        transformStamped.child_frame_id = target_name.c_str(); //name of the frame
+        ROS_INFO("Broadcasting: %s", target_name.c_str()); 
+        transformStamped.child_frame_id = target_name; //name of the frame
         //transformStamped.child_frame_id = "my_frame";
-        //transformStamped.transform = msg->transforms[0].transform;
-        transformStamped.transform.translation.x = 0.5;
-        transformStamped.transform.translation.y = 0.5;
-        transformStamped.transform.translation.z = 0.2;
-        transformStamped.transform.rotation.x = 0;
-        transformStamped.transform.rotation.y = 0;
-        transformStamped.transform.rotation.z = 0;
-        transformStamped.transform.rotation.w = 1;
+        transformStamped.transform = msg->transforms[0].transform;
+
         br.sendTransform(transformStamped); //broadcast the transform on /tf Topic
     }
 }
 
 void Rescue_Bot::detect_aruco_marker(){
     static ros::Publisher vel_pub = m_nh.advertise<geometry_msgs::Twist>(std::string(m_type_name + "/cmd_vel").c_str(), 100); 
-    static ros::Subscriber m_fiducial_sub = m_nh.subscribe("/fiducial_transforms", 100, &Rescue_Bot::fiducial_callback, this); 
 
-    ros::Rate loop_rate(20);
+    ros::Rate loop_rate(2);
 
-    while (ros::ok() && !m_find_marker) {
+    while (ros::ok()) {
         geometry_msgs::Twist msg; 
         msg.linear.x = 0.0; 
         msg.linear.y = 0.0; 
@@ -131,8 +125,10 @@ void Rescue_Bot::detect_aruco_marker(){
         vel_pub.publish(msg); 
 
         ros::spinOnce(); 
-
         loop_rate.sleep();
+        if(m_find_marker){
+            break; 
+        }
     }
     m_find_marker = false; 
 

@@ -4,8 +4,8 @@
 
 #include "rescue_bot.h"
 
-int main(int argc, char** argv)
-{
+ 
+int main(int argc, char** argv) {
   ros::init(argc, argv, "simple_navigation_goals");
   ros::NodeHandle nh;
 
