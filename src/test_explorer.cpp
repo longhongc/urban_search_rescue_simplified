@@ -2,14 +2,14 @@
 
 #include <ros/ros.h>
 
-#include "rescue_bot.h"
+#include "explorer.h"
 
  
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "simple_navigation_goals");
+  ros::init(argc, argv, "explorer_test_node");
   ros::NodeHandle nh;
 
-  Rescue_Bot explorer{&nh, Robot_Type::Explorer};  
+  Explorer explorer{&nh};  
   explorer.search_targets(); 
   explorer.reset_position(); 
 
