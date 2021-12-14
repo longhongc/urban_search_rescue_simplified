@@ -39,6 +39,9 @@ void Explorer::reset_position() {
     ROS_INFO("Back to start position");
     move_to_position(m_start_position); 
     ROS_INFO("Reset position finish");
+    ros::service::waitForService("start_rescue"); 
+    std_srvs::Trigger start_rescue_srv; 
+    ros::service::call("start_rescue", start_rescue_srv); 
 }
 
 void Explorer::move_to_position(Position target_position){

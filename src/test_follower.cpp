@@ -10,6 +10,7 @@ int main(int argc, char** argv) {
   ros::NodeHandle nh;
 
   Follower follower{&nh};  
+  follower.print_targets_position(); 
   //follower.search_targets(); 
   //follower.reset_position(); 
 

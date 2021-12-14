@@ -6,27 +6,34 @@ typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseCl
 
 Follower::Follower(ros::NodeHandle* nodehandle) :
     m_nh{*nodehandle} {
+    m_start_rescue_service = m_nh.advertiseService("start_rescue", &Follower::start_rescue, this); 
 
     ROS_INFO("Robot initializing"); 
     ROS_INFO("Getting Targets Position..."); 
+
     get_targets_position(); 
 }
 
+bool Follower::start_rescue(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
+    res.success = true; 
+    res.message = "Follower start rescue"; 
+    ROS_INFO("Follower start rescue"); 
+    m_start_rescue = true; 
+
+    return true; 
+}
+
 void Follower::print_targets_position() {
-    int count = 1; 
     for (auto &target: m_targets) {
-        std::cout << "target " << count << ": "
-              << "(" << target.x << ", " << target.y << ")" << std::endl; 
-        count++; 
+        std::cout << "target " << target.id << ": "
+              << "(" << target.pos.x << ", " << target.pos.y << ")" << std::endl; 
     }
 
 }
 
 void Follower::search_targets() {
    for (int i=0; i<m_targets.size(); i++) {
-        auto target_position = m_targets.at(i); 
-        target_position.x += m_tolerance; 
-        target_position.y += m_tolerance; 
+        auto target_position = m_targets.at(i).pos; 
         ROS_INFO("Sending goal to target %d", i);
         move_to_position(target_position); 
         ROS_INFO("Robot reached target %d", i);
@@ -84,6 +91,10 @@ void Follower::listen(tf2_ros::Buffer& tfBuffer) {
             << trans_y << ","
             << trans_z << "]"
           );
+          m_listened_data.at(i).push(Position{trans_x, trans_y}); 
+          if(m_listened_data.at(i).size() > 20){
+              m_listened_data.at(i).pop(); 
+          }
         }
         catch (tf2::TransformException& ex) {
           //ROS_WARN("%s", ex.what());
@@ -102,6 +113,32 @@ void Follower::get_targets_position() {
     while (ros::ok()) {
         listen(tfBuffer);
 
+        ros::spinOnce(); 
         loop_rate.sleep();
+        if(m_start_rescue){
+            break; 
+        }
+    }
+    
+    // calculate the average of listened data
+    for(int i=0; i < m_number_of_targets; i++){
+        int num_of_data = m_listened_data.at(i).size(); 
+        if(num_of_data == 0){
+            continue; 
+        }
+
+        double avg_x = 0.0; 
+        double avg_y = 0.0; 
+
+        while(!m_listened_data.at(i).empty()){
+            avg_x += m_listened_data.at(i).front().x; 
+            avg_y += m_listened_data.at(i).front().y; 
+            m_listened_data.at(i).pop(); 
+        }
+
+        avg_x = avg_x / num_of_data; 
+        avg_y = avg_x / num_of_data; 
+
+        m_targets.emplace_back(Targets{{avg_x, avg_y}, i}); 
     }
 }
