@@ -1,6 +1,10 @@
 #include <iostream>
 #include <math.h>
 
+#include <actionlib/client/simple_action_client.h>
+#include <geometry_msgs/Twist.h>   
+#include <std_srvs/Trigger.h>
+
 #include "explorer.h"
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
@@ -95,6 +99,7 @@ void Explorer::get_targets_pose() {
 
     }
 }
+
 
 void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::ConstPtr& msg) {
     if (!msg->transforms.empty()) {

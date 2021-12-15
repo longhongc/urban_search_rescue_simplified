@@ -1,4 +1,9 @@
 #include <iostream>
+#include <string>
+
+#include <move_base_msgs/MoveBaseAction.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include "follower.h"
 
@@ -17,15 +22,6 @@ Follower::Follower(ros::NodeHandle* nodehandle) :
     ROS_INFO("Getting targets pose"); 
 
     get_targets_pose(); 
-}
-
-bool Follower::start_rescue(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
-    res.success = true; 
-    res.message = "Follower start rescue"; 
-    ROS_INFO("Follower start rescue"); 
-    m_start_rescue = true; 
-
-    return true; 
 }
 
 void Follower::print_targets_pose() {
@@ -79,6 +75,15 @@ void Follower::move_to_pose(geometry_msgs::Pose target_pose){
         }
         loop_rate.sleep();
     }
+}
+
+bool Follower::start_rescue(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
+    res.success = true; 
+    res.message = "Follower start rescue"; 
+    ROS_INFO("Follower start rescue"); 
+    m_start_rescue = true; 
+
+    return true; 
 }
 
 void Follower::listen(tf2_ros::Buffer& tfBuffer) {
@@ -178,3 +183,5 @@ void Follower::get_targets_pose() {
         m_targets.emplace_back(target); 
     }
 }
+
+
