@@ -161,7 +161,6 @@ void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::Co
                                 // set tolerance because if the target frame is too close to the wall
                                 // movebase cannot find valid plan
                                 //
-        m_marker_direction = (transformStamped.transform.translation.y > 0)? 1 : -1;  
 
         transformStamped.transform.translation.x *= tolerance;
         transformStamped.transform.translation.y *= tolerance;
@@ -175,8 +174,7 @@ void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::Co
 /* --------------------------------------------------------------------------*/
 /**
  * @Brief  Slowly turn and detect arucu marker 
- *         After the fiducial subscriber find the marker on first time,  
- *         the robot will turn very slow for a small duration to get clearer marker pose data
+ *         the robot will turn very slow for a full circle to detect all visible targets at this location
  */
 /* --------------------------------------------------------------------------*/
 void Explorer::detect_aruco_marker(){
@@ -210,19 +208,10 @@ void Explorer::detect_aruco_marker(){
 
         total_turning_time += end - begin;
         turned_angle = total_turning_time.toSec() * turning_vel; 
+        // turn the robot a full circle to see if there are missing targets at this location
         if(m_find_marker && turned_angle > 2 * M_PI){
             break; 
         }
-        // decrease spining speed for better detection after first marker found
-        // if(m_find_marker) {
-        //     d += end - begin;
-        //     // small delay time for better detection
-        //     bool finish_delay = d.toSec() > 5; 
-        //     turning_vel = 0.05; 
-        //     if(finish_delay) {
-        //         break; 
-        //     }
-        // }
     }
     m_find_marker = false; 
 }
