@@ -176,6 +176,8 @@ void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::Co
  */
 /* --------------------------------------------------------------------------*/
 void Explorer::detect_aruco_marker(){
+    m_find_marker = false;  
+
     static ros::Publisher vel_pub = m_nh.advertise<geometry_msgs::Twist>("/explorer/cmd_vel", 100); 
     ros::Subscriber m_fiducial_sub = m_nh.subscribe("/fiducial_transforms", 100, &Explorer::fiducial_callback, this); 
 
@@ -204,7 +206,7 @@ void Explorer::detect_aruco_marker(){
         if(m_find_marker) {
             d += end - begin;
             // small delay time for better detection
-            bool finish_delay = d.toSec() > 1; 
+            bool finish_delay = d.toSec() > 2; 
             turning_vel = 0.05; 
             if(finish_delay) {
                 break; 
