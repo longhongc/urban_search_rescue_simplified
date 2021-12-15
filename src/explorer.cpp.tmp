@@ -8,46 +8,43 @@ typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseCl
 Explorer::Explorer(ros::NodeHandle* nodehandle) :
     m_nh{*nodehandle} {
 
-    m_start_pose.position.x = -4; 
-    m_start_pose.position.y = 2.5; 
-    m_start_pose.orientation.w = 1.0; 
 
     ROS_INFO("Robot initializing"); 
-    ROS_INFO("Getting targets pose"); 
-    get_targets_pose(); 
+    ROS_INFO("Getting Targets Position..."); 
+    get_targets_position(); 
 }
 
-void Explorer::print_targets_pose() {
+void Explorer::print_targets_position() {
     int count = 1; 
     for (auto &target: m_targets) {
         std::cout << "target " << count << ": "
-              << "(" << target.pose.position.x << ", " << target.pose.position.y << ")" << std::endl; 
+              << "(" << target.x << ", " << target.y << ")" << std::endl; 
         count++; 
     }
 
 }
 
 void Explorer::search_targets() {
-   for (auto &target: m_targets) {
-        auto target_pose = target.pose; 
-        ROS_INFO("Sending goal to target %d", target.id);
-        move_to_pose(target_pose); 
-        ROS_INFO("Robot reached target %d", target.id);
+   for (int i=0; i<m_targets.size(); i++) {
+        auto target_position = m_targets.at(i); 
+        ROS_INFO("Sending goal to target %d", i+1);
+        move_to_position(target_position); 
+        ROS_INFO("Robot reached target %d", i+1);
         detect_aruco_marker(); 
     }
     ROS_INFO("Targets search finish");
 }
 
-void Explorer::reset_pose() {
-    ROS_INFO("Back to start pose");
-    move_to_pose(m_start_pose); 
-    ROS_INFO("Reset pose finish");
+void Explorer::reset_position() {
+    ROS_INFO("Back to start position");
+    move_to_position(m_start_position); 
+    ROS_INFO("Reset position finish");
     ros::service::waitForService("start_rescue"); 
     std_srvs::Trigger start_rescue_srv; 
     ros::service::call("start_rescue", start_rescue_srv); 
 }
 
-void Explorer::move_to_pose(geometry_msgs::Pose target_pose){
+void Explorer::move_to_position(Position target_position){
     static MoveBaseClient movebase_client("/explorer/move_base", true);
     while (!movebase_client.waitForServer(ros::Duration(5.0))) {
         ROS_INFO("Waiting for the move_base action server to come up");
@@ -58,8 +55,9 @@ void Explorer::move_to_pose(geometry_msgs::Pose target_pose){
 
     goal.target_pose.header.frame_id = "map";
     goal.target_pose.header.stamp = ros::Time::now();
-    goal.target_pose.pose = target_pose;
-    //goal.target_pose.pose.orientation.w = 1.0;
+    goal.target_pose.pose.position.x = target_position.x;
+    goal.target_pose.pose.position.y = target_position.y;
+    goal.target_pose.pose.orientation.w = 1.0;
 
     ros::Rate loop_rate(10);
 
@@ -75,20 +73,13 @@ void Explorer::move_to_pose(geometry_msgs::Pose target_pose){
     }
 }
 
-void Explorer::get_targets_pose() {
+void Explorer::get_targets_position() {
     for (int i=1; i < m_number_of_targets+1; i++) {
-        std::vector<double> target_position; 
+        std::vector<double> target_pos; 
         std::string target_pos_param = "/aruco_lookup_locations/target_" + std::to_string(i); 
         if (m_nh.hasParam(target_pos_param)) {
-            m_nh.getParam(target_pos_param, target_position); 
-
-            geometry_msgs::Pose target_pose; 
-            target_pose.position.x = target_position.at(0); 
-            target_pose.position.y = target_position.at(1); 
-            target_pose.orientation.w = 1.0; 
-
-            m_targets.emplace_back(Target{target_pose, i}); 
-
+            m_nh.getParam(target_pos_param, target_pos); 
+            m_targets.emplace_back(Position{target_pos.at(0), target_pos.at(1)}); 
         }else {
             std::cout << "Target " << i << " position retrieving failed" << std::endl; 
         }

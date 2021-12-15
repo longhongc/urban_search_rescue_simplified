@@ -17,11 +17,8 @@
 #include <std_srvs/Trigger.h>
 
 #include <ros/ros.h>
-
-struct Target {
-    geometry_msgs::Pose pose; 
-    int id = -1; // -1 means null id 
-}; 
+ 
+#include <util.h>
 
 class Follower {
     public:

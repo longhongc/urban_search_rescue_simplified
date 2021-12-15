@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 
   Explorer explorer{&nh};  
   explorer.search_targets(); 
-  explorer.reset_position(); 
+  explorer.reset_pose(); 
 
   return 0; 
 }

@@ -14,7 +14,7 @@ Follower::Follower(ros::NodeHandle* nodehandle) :
     m_start_rescue_service = m_nh.advertiseService("start_rescue", &Follower::start_rescue, this); 
 
     ROS_INFO("Robot initializing"); 
-    ROS_INFO("Getting Targets Position"); 
+    ROS_INFO("Getting targets pose"); 
 
     get_targets_pose(); 
 }
@@ -47,9 +47,9 @@ void Follower::search_targets() {
 }
 
 void Follower::reset_pose() {
-    ROS_INFO("Back to start position");
+    ROS_INFO("Back to start pose");
     move_to_pose(m_start_pose); 
-    ROS_INFO("Reset position finish");
+    ROS_INFO("Reset pose finish");
 }
 
 void Follower::move_to_pose(geometry_msgs::Pose target_pose){
