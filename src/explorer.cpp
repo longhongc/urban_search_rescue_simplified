@@ -160,9 +160,13 @@ void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::Co
         double tolerance = 0.3; // the distance between the marker and target frame
                                 // set tolerance because if the target frame is too close to the wall
                                 // movebase cannot find valid plan
+                                //
+        m_marker_direction = (transformStamped.transform.translation.y > 0)? 1 : -1;  
+
         transformStamped.transform.translation.x *= tolerance;
         transformStamped.transform.translation.y *= tolerance;
         transformStamped.transform.translation.z *= tolerance;
+
 
         m_br.sendTransform(transformStamped); //broadcast the transform on /tf Topic
     }
@@ -183,7 +187,9 @@ void Explorer::detect_aruco_marker(){
 
     ros::Rate loop_rate(20);
 
-    double turning_vel = 0.1;  
+    double turning_vel = 0.3;  
+    double turned_angle = 0.0; 
+    ros::Duration total_turning_time(0); 
     ros::Duration d(0);
     while (ros::ok()) {
         ros::Time begin = ros::Time::now();
@@ -202,16 +208,21 @@ void Explorer::detect_aruco_marker(){
 
         ros::Time end = ros::Time::now();
 
-        // decrease spining speed for better detection after first marker found
-        if(m_find_marker) {
-            d += end - begin;
-            // small delay time for better detection
-            bool finish_delay = d.toSec() > 2; 
-            turning_vel = 0.05; 
-            if(finish_delay) {
-                break; 
-            }
+        total_turning_time += end - begin;
+        turned_angle = total_turning_time.toSec() * turning_vel; 
+        if(m_find_marker && turned_angle > 2 * M_PI){
+            break; 
         }
+        // decrease spining speed for better detection after first marker found
+        // if(m_find_marker) {
+        //     d += end - begin;
+        //     // small delay time for better detection
+        //     bool finish_delay = d.toSec() > 5; 
+        //     turning_vel = 0.05; 
+        //     if(finish_delay) {
+        //         break; 
+        //     }
+        // }
     }
     m_find_marker = false; 
 }

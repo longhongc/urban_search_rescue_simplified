@@ -44,6 +44,7 @@ class Explorer {
         std::vector<Target> m_targets; // use vector instead of array to be more flexible when target can't be detected
 
         bool m_find_marker = false;  
+        int m_marker_direction = 1; // initially test ccw to find marker 
 
         tf2_ros::TransformBroadcaster m_br;
 }; 
