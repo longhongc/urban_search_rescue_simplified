@@ -1,5 +1,38 @@
-# final_project
-Non-complete package for the final project for: ENPM809Y Fall 2021
+# Urban Search and Rescue
+This is the final project of ENPM809Y.  
+We simulated a simplified urban search and rescue mission.   
+There are two robots. The first robots is called the explorer and it is reponsible for searching all the targets. 
+It will then broadcast the tf of targets. The other robot is the follower. It listen to the broadcasted tf and start rescue mission.  
 
-- The `doc` folder contains the instructions.
-- The `script` folder contains install.bash to install required packages.
+## Enviconment
+Ubuntu 20.04
+ROS noetic
+
+## Dependencies
+Install the dependencies script  
+```
+cd script
+sh install.bash
+```
+
+## Build
+Clone the project in src folder then build with catkin tool
+```
+cd {ros_workspace}/src
+git clone https://github.com/longhongc/urban_search_rescue_simplified.git
+cd {ros_workspace} && catkin_make (or catkin build)
+```
+
+## Run
+Start the S&R rviz and gazebo simulation 
+```
+roslaunch final_project multiple_robots.launch
+```
+
+Start the search and rescue mission
+```
+roslaunch final_project search_and_rescue.launch
+```
+
+<img src=videos/search_and_rescue_gazebo.gif width="500" height="350" />   
+<img src=videos/search_and_rescue_rviz.gif width="500" height="350" />   
