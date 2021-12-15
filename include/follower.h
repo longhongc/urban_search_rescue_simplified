@@ -13,6 +13,12 @@
  
 #include "util.h"
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief  The follower class that provides functions for the robot to perform rescue mission
+ *         Rescue mission is to listen to the broadcast from other robot and move to the targets in a specific sequence
+ */
+/* --------------------------------------------------------------------------*/
 class Follower {
     public:
         Follower(ros::NodeHandle* nodehandle); 
@@ -32,6 +38,7 @@ class Follower {
         bool m_start_rescue = false;
 
         static const int m_number_of_targets = 4; 
+        // Array of queue to store the targets tf frame
         std::array<std::queue<geometry_msgs::Pose>, m_number_of_targets> m_listened_data; 
         std::vector<Target> m_targets;  
 

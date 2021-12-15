@@ -3,6 +3,11 @@
 
 #include <geometry_msgs/Pose.h>   
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief Information of a target on map 
+ */
+/* --------------------------------------------------------------------------*/
 struct Target {
     geometry_msgs::Pose pose; 
     int id = -1; // -1 means null id 

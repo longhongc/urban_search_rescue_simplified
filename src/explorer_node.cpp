@@ -1,5 +1,9 @@
-#include <iostream>
+/**
+ * @file explorer_node.cpp
+ * @Brief Explorer search for targets through ros param  
+ */
 
+#include <iostream>
 #include <ros/ros.h>
 
 #include "explorer.h"

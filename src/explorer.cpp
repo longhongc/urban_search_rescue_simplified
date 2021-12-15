@@ -9,18 +9,30 @@
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief Constructor for Explorer
+ *
+ * @Param nodehandle ros handler
+ */
+/* --------------------------------------------------------------------------*/
 Explorer::Explorer(ros::NodeHandle* nodehandle) :
     m_nh{*nodehandle} {
 
     m_start_pose.position.x = -4; 
     m_start_pose.position.y = 2.5; 
-    m_start_pose.orientation.w = 1.0; 
+    m_start_pose.orientation.w = 1.0; // the default orientation
 
     ROS_INFO("Robot initializing"); 
     ROS_INFO("Getting targets pose"); 
     get_targets_pose(); 
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief Print the saved targets position for debugging
+ */
+/* --------------------------------------------------------------------------*/
 void Explorer::print_targets_pose() {
     int count = 1; 
     for (auto &target: m_targets) {
@@ -31,6 +43,11 @@ void Explorer::print_targets_pose() {
 
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief Search for the recoreded targets in sequence
+ */
+/* --------------------------------------------------------------------------*/
 void Explorer::search_targets() {
    for (auto &target: m_targets) {
         auto target_pose = target.pose; 
@@ -42,15 +59,27 @@ void Explorer::search_targets() {
     ROS_INFO("Targets search finish");
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief Move the explorer back to start point
+ */
+/* --------------------------------------------------------------------------*/
 void Explorer::reset_pose() {
     ROS_INFO("Back to start pose");
     move_to_pose(m_start_pose); 
     ROS_INFO("Reset pose finish");
     ros::service::waitForService("start_rescue"); 
-    std_srvs::Trigger start_rescue_srv; 
+    std_srvs::Trigger start_rescue_srv; // call service to tell follower to rescue
     ros::service::call("start_rescue", start_rescue_srv); 
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief Move explorer to a pose
+ *
+ * @Param target_pose a pose contains position and orientation
+ */
+/* --------------------------------------------------------------------------*/
 void Explorer::move_to_pose(geometry_msgs::Pose target_pose){
     static MoveBaseClient movebase_client("/explorer/move_base", true);
     while (!movebase_client.waitForServer(ros::Duration(5.0))) {
@@ -63,13 +92,12 @@ void Explorer::move_to_pose(geometry_msgs::Pose target_pose){
     goal.target_pose.header.frame_id = "map";
     goal.target_pose.header.stamp = ros::Time::now();
     goal.target_pose.pose = target_pose;
-    //goal.target_pose.pose.orientation.w = 1.0;
 
     ros::Rate loop_rate(10);
 
     while (ros::ok()) {
         if (!goal_sent){
-            movebase_client.sendGoal(goal);//this should be sent only once
+            movebase_client.sendGoal(goal);
             goal_sent = true;
         }
         if (movebase_client.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
@@ -79,6 +107,11 @@ void Explorer::move_to_pose(geometry_msgs::Pose target_pose){
     }
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief Getting the targets position from the ros param server
+ */
+/* --------------------------------------------------------------------------*/
 void Explorer::get_targets_pose() {
     for (int i=1; i < m_number_of_targets+1; i++) {
         std::vector<double> target_position; 
@@ -101,10 +134,19 @@ void Explorer::get_targets_pose() {
 }
 
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief The callback function for subscriber of /fidicial_transforms
+ *        Publish the targets pose on to tf server for follower to trace
+ *        The targets pose is a pose with a distance of tolerance to the fiducial marker frame
+ *
+ * @Param msg /fidicial_transforms ros message
+ */
+/* --------------------------------------------------------------------------*/
 void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::ConstPtr& msg) {
     if (!msg->transforms.empty()) {
         ROS_INFO("Find marker");
-        m_find_marker = true; 
+        m_find_marker = true; // to inform the explorer that a marker has been detected 
         //broadcaster object
         geometry_msgs::TransformStamped transformStamped;
 
@@ -115,7 +157,9 @@ void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::Co
         ROS_INFO("Broadcasting: %s", target_name.c_str()); 
         transformStamped.child_frame_id = target_name; //name of the frame
         transformStamped.transform = msg->transforms[0].transform;
-        double tolerance = 0.3; 
+        double tolerance = 0.3; // the distance between the marker and target frame
+                                // set tolerance because if the target frame is too close to the wall
+                                // movebase cannot find valid plan
         transformStamped.transform.translation.x *= tolerance;
         transformStamped.transform.translation.y *= tolerance;
         transformStamped.transform.translation.z *= tolerance;
@@ -124,6 +168,13 @@ void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::Co
     }
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief  Slowly turn and detect arucu marker 
+ *         After the fiducial subscriber find the marker on first time,  
+ *         the robot will turn very slow for a small duration to get clearer marker pose data
+ */
+/* --------------------------------------------------------------------------*/
 void Explorer::detect_aruco_marker(){
     static ros::Publisher vel_pub = m_nh.advertise<geometry_msgs::Twist>("/explorer/cmd_vel", 100); 
     ros::Subscriber m_fiducial_sub = m_nh.subscribe("/fiducial_transforms", 100, &Explorer::fiducial_callback, this); 
@@ -152,7 +203,7 @@ void Explorer::detect_aruco_marker(){
         // decrease spining speed for better detection after first marker found
         if(m_find_marker) {
             d += end - begin;
-            // turn little angle for a delay time for better detection
+            // small delay time for better detection
             bool finish_delay = d.toSec() > 1; 
             turning_vel = 0.05; 
             if(finish_delay) {

@@ -13,6 +13,12 @@
 
 #include "util.h"
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Brief  The explorer class that provides functions for the robot to perform searching mission
+ *         Searching mission is to find all the targets, locate them, and broadcast the pose to other robot
+ */
+/* --------------------------------------------------------------------------*/
 class Explorer {
     public:
         Explorer(ros::NodeHandle* nodehandle); 
@@ -29,8 +35,8 @@ class Explorer {
         ros::NodeHandle m_nh;  
         geometry_msgs::Pose m_start_pose; 
 
-        int m_number_of_targets = 4; 
-        std::vector<Target> m_targets;  
+        const int m_number_of_targets = 4; 
+        std::vector<Target> m_targets; // use vector instead of array to be more flexible when target can't be detected
 
         bool m_find_marker = false;  
 
