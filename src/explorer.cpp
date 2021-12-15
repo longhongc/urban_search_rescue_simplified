@@ -115,8 +115,10 @@ void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::Co
         ROS_INFO("Broadcasting: %s", target_name.c_str()); 
         transformStamped.child_frame_id = target_name; //name of the frame
         transformStamped.transform = msg->transforms[0].transform;
-        double tolerance = 0.4; 
-        transformStamped.transform.translation.z -= tolerance;
+        double tolerance = 0.3; 
+        transformStamped.transform.translation.x *= tolerance;
+        transformStamped.transform.translation.y *= tolerance;
+        transformStamped.transform.translation.z *= tolerance;
 
         m_br.sendTransform(transformStamped); //broadcast the transform on /tf Topic
     }
@@ -151,7 +153,7 @@ void Explorer::detect_aruco_marker(){
         if(m_find_marker) {
             d += end - begin;
             // turn little angle for a delay time for better detection
-            bool finish_delay = d.toSec() > ((M_PI/3) / turning_vel); 
+            bool finish_delay = d.toSec() > 1; 
             turning_vel = 0.05; 
             if(finish_delay) {
                 break; 

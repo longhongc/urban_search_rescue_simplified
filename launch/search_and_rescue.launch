@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="follower_node" pkg="final_project" type="final_project_follower_node"/>
+    <node name="explorer_node" pkg="final_project" type="final_project_explorer_node"/>
+</launch>
