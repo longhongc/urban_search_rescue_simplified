@@ -3,6 +3,8 @@
 
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/Twist.h>   
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <std_srvs/Trigger.h>
 
 #include "explorer.h"
@@ -157,14 +159,20 @@ void Explorer::fiducial_callback(const fiducial_msgs::FiducialTransformArray::Co
         ROS_INFO("Broadcasting: %s", target_name.c_str()); 
         transformStamped.child_frame_id = target_name; //name of the frame
         transformStamped.transform = msg->transforms[0].transform;
-        double tolerance = 0.3; // the distance between the marker and target frame
+        double tolerance = 0.4; // the distance between the marker and target frame 
+                                // along the z-axis of the marker
                                 // set tolerance because if the target frame is too close to the wall
                                 // movebase cannot find valid plan
                                 //
 
-        transformStamped.transform.translation.x *= tolerance;
-        transformStamped.transform.translation.y *= tolerance;
-        transformStamped.transform.translation.z *= tolerance;
+        tf2::Quaternion quat_tf;
+        auto quat_msg = msg->transforms[0].transform.rotation; 
+        tf2::fromMsg(quat_msg, quat_tf);
+        auto z_axis = tf2::Matrix3x3(quat_tf).getColumn(2); // marker z axis in camera frame
+
+        transformStamped.transform.translation.x += z_axis[0] * tolerance;
+        transformStamped.transform.translation.y += z_axis[1] * tolerance;
+        transformStamped.transform.translation.z += z_axis[2] * tolerance;
 
 
         m_br.sendTransform(transformStamped); //broadcast the transform on /tf Topic
