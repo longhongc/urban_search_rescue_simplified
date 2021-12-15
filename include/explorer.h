@@ -1,3 +1,8 @@
+/**
+ * @file explorer.h
+ * @Brief THe explorer class  
+ */
+
 #ifndef EXPLORER_BOT_H
 #define EXPLORER_BOT_H
 

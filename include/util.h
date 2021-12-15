@@ -1,3 +1,7 @@
+/**
+ * @file util.h
+ * @Brief Utility functions for other files  
+ */
 #ifndef UTIL_H
 #define UTIL_H
 

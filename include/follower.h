@@ -1,3 +1,7 @@
+/**
+ * @file follower.h
+ * @Brief The follower class  
+ */
 #ifndef FOLLOWER_H
 #define FOLLOWER_H
 
